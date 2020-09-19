@@ -13,7 +13,7 @@ BASE_URL = 'https://rokort.dk/api'
 CLUB_ID = 58
 
 
-def get_b64_auth_string():
+def get_auth_string():
     # Get from args if possible, otherwise prompt user
     if len(sys.argv) > 2:
         username = sys.argv[1]
@@ -31,13 +31,9 @@ def get_b64_auth_string():
     return b64_bytes.decode('ascii')
 
 
-def get_members(club_id: int):
-    # Get username and password
-    b64 = get_b64_auth_string()
-
-    url = BASE_URL + '/members'
+def get(url: str, auth_string: str, club_id: int):
     headers = {
-        'Authorization': 'Basic ' + b64,
+        'Authorization': 'Basic ' + auth_string,
         'X-ClubId': str(club_id)
     }
 
@@ -45,38 +41,31 @@ def get_members(club_id: int):
         x = requests.get(
             url,
             headers=headers,
-            verify=False
+            verify=False,
         )
-        return x.json()
+        return x
     except requests.exceptions.SSLError as e:
         print(e)
 
 
-def get_clubs():
-    # Get username and password
-    b64 = get_b64_auth_string()
+def get_members(auth_string: str):
+    response = get(BASE_URL + '/members', auth_string, CLUB_ID)
+    if response is None:
+        print('GET members failed')
+    return response.json()
 
-    url = BASE_URL + '/clubs'
-    headers = {
-        'Authorization': 'Basic ' + b64,
-        # 'Content-Type': 'application/json; charset=utf8',
-        # 'X-ClubId': '103',
-    }
 
-    try:
-        x = requests.get(
-            url,
-            headers=headers,
-            verify=False
-        )
-        print('Successful GET request')
-        print(x.json())
-    except requests.exceptions.SSLError as e:
-        print(e)
+def get_me(auth_string: str):
+    response = get(BASE_URL + "/members/me", auth_string, CLUB_ID)
+    if response is None:
+        print('GET me failed')
+    return response.json()
 
 
 def main():
-    print(get_members(CLUB_ID))
+    auth_string = get_auth_string()
+    me = get_me(auth_string)
+    print(me)
 
 
 if __name__ == "__main__":
