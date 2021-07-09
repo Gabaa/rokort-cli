@@ -1,5 +1,6 @@
 import base64
 import getpass
+import json
 import sys
 
 import requests
@@ -65,7 +66,7 @@ def get_me(auth_string: str):
 def main():
     auth_string = get_auth_string()
     me = get_me(auth_string)
-    print(me)
+    print(json.dumps(me, indent=4))
 
 
 if __name__ == "__main__":
